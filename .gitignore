@@ -1,2 +1,6 @@
 **/__pycache__/*
 **/outputs/*
+*.exe
+*.tga
+*.obj
+.vscode/*
