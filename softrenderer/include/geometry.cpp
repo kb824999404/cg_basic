@@ -39,3 +39,29 @@ void Geometry::line(int x0,int y0,int x1,int y1,const TGAColor& color,TGAImage& 
         }
     }
 }
+
+void Geometry::circle(int x0,int y0,int r,const TGAColor& color,TGAImage& image){
+    int x=0,y=r;
+    int f=0;
+    while (x<=y)
+    {
+        // 八个对称点
+        drawPixel(x0+x,y0+y,color,image);
+        drawPixel(x0+y,y0+x,color,image);
+        drawPixel(x0+y,y0-x,color,image);
+        drawPixel(x0+x,y0-y,color,image);
+        drawPixel(x0-x,y0+y,color,image);
+        drawPixel(x0-y,y0+x,color,image);
+        drawPixel(x0-y,y0-x,color,image);
+        drawPixel(x0-x,y0-y,color,image);
+        if(f<0){
+            f+=2*x+1;
+            x++;
+        }
+        else{
+            f+=1-2*y;
+            y--;
+        }
+    }
+    
+}
