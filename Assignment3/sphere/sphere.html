@@ -14,9 +14,14 @@
 </head>
 
 <body>
+  <div class="ui">
+    <p>鼠标左键：旋转</p>
+    <p>鼠标滚轮：缩放</p>
+    <p>鼠标右键：平移</p>
+  </div>
   <script>
 
-let container, controls;
+    let container, controls;
     let camera, scene, renderer;
 
     init();
@@ -26,6 +31,7 @@ let container, controls;
     //初始化
     function init(){
         container = document.createElement( 'div' );
+        container.classList.add('canvas')
 				document.body.appendChild( container );
 
         // 场景
@@ -149,14 +155,11 @@ let container, controls;
         while(c<=z)
         {
             var v=c/r;
+            //四个对称截面
             circle_bresenham(x0,y0,c,z,color);
             circle_bresenham(x0,y0,z,c,color);
             circle_bresenham(x0,y0,c,-z,color);
             circle_bresenham(x0,y0,z,-c,color);
-            circle_bresenham(x0,y0,-c,z,color);
-            circle_bresenham(x0,y0,-z,c,color);
-            circle_bresenham(x0,y0,-c,-z,color);
-            circle_bresenham(x0,y0,-z,-c,color);
             if(d<0)
             {
                 d+=4*c+7;
@@ -182,5 +185,27 @@ let container, controls;
     }
 
   </script>
+  <style>
+    body{
+      padding: 0;
+    }
+    .ui{
+      position: absolute;
+      margin-left: 5vh;
+      margin-top: 5vh;
+      z-index: 100;
+      background-color: rgba(255,255, 255, 0.5);
+      border-radius: 10px;
+      box-shadow: 0 5px 3px #ccc;
+    }
+    .ui p{
+      color: #7777ff;
+      margin-left: 5vh;
+      margin-right: 5vh;
+    }
+    .canvas{
+      z-index: -1;
+    }
+  </style>
 </body>
 </html>

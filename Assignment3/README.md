@@ -12,8 +12,9 @@
     * `circle/utils.py`：一些辅助函数
     * `circle/outputs/`：结果图片
   * `sphere/`：球面片生成算法
-    * `sphere/include/three.js`：Three.JS代码
-    * `sphere/sphere.html`：球面片生成算法可视化
+    * `sphere/include/`：Three.JS代码
+    * `sphere/sphere.html`：球面片生成算法可视化代码
+    * `sphere/results`：结果图片
 
 ## 1. 带宽度的圆弧生成算法
 
@@ -206,3 +207,88 @@ def BresenhamCircle_type(img,x0,y0,r,color,linetype=[1,1]):
 ---
 
 ## 3. 球面片生成算法
+
+### 3.1 算法思想
+
+* 将球面沿一个方向切分开来，切分数量足够多时，每个截面都可以看作是一个圆，因此球面片可以通过圆弧来生成，圆弧可以通过基本的圆弧算法来生成，因此需要确定的就是截面在切分轴上的坐标和圆弧的半径
+* 假设将球面沿`z`轴方向切分，每个截面为一个`xy`平面上的圆，设球面半径为$R$，在截面`z`坐标为$z_0$的情况下，截面圆的半径为$c$
+  * 球面的直角坐标系方程为$x^2+y^2+z^2=R^2$
+  * $z=z_0$时，$c^2=x^2+y^2$，因此$c^2+z_0^2=R^2$
+* 由此可知截面的坐标和截面圆弧半径的关系相当于圆弧x坐标和y坐标的关系，因此每个截面的$c$和$z$值同样可通过圆弧生成算法来计算
+* 算法步骤如下：
+  1. 通过圆弧生成算法生成每个截面的$z$坐标$z_0$和截面圆半径$c$
+  2. 对每对$z_0$和$c$值，在$z$坐标为$z_0$的位置通过圆弧生成算法生成一个半径为$c$的圆弧
+
+### 3.2 算法实现
+
+```javascript
+//基于Bresenham算法的球面生成算法
+function sphere_bresenham(x0,y0,z0,r,color){
+    var c=0; //截面半径
+    var z=r; //z坐标
+    var d=3-2*r;
+    while(c<=z)
+    {
+        var v=c/r;
+        //四个对称截面
+        circle_bresenham(x0,y0,c,z,color);
+        circle_bresenham(x0,y0,z,c,color);
+        circle_bresenham(x0,y0,c,-z,color);
+        circle_bresenham(x0,y0,z,-c,color);
+        if(d<0)
+        {
+            d+=4*c+7;
+        }
+        else
+        {
+            d+=4*(c-z)+11;
+            z--;
+        }
+        c++;
+    }
+}
+
+//圆生成算法
+function circle_bresenham(x0,y0,r,z,color){
+    var x=0,y=r;
+    var d=3-2*r;
+    while (x<=y)
+    {
+        // 八个对称点
+        drawVoxel_symmetric8(x0,y0,x,y,z,color)
+        if(d<0){
+            d+=4*x+7;
+        }
+        else{
+            d+=4*(x-y)+11;
+            y--;
+        }
+        x++;
+    }
+}
+//绘制八个对称体素
+function drawVoxel_symmetric8(x0,y0,x,y,z,color){
+    drawVoxel(x0+x,y0+y,z,color);
+    drawVoxel(x0+y,y0+x,z,color);
+    drawVoxel(x0+x,y0-y,z,color);
+    drawVoxel(x0+y,y0-x,z,color);
+    drawVoxel(x0-x,y0+y,z,color);
+    drawVoxel(x0-y,y0+x,z,color);
+    drawVoxel(x0-x,y0-y,z,color);
+    drawVoxel(x0-y,y0-x,z,color);
+}
+```
+
+
+
+### 3.3 算法结果
+
+> 每个体素用一个正方体来表示，在Three.JS中的可视化结果如下：
+
+* `R=20`：
+
+  * <center><img src="sphere/results/sphere_20.JPG" style="zoom:67%;" /></center>
+
+* `R=50`：
+
+  * <center><img src="sphere/results/sphere_50.JPG" style="zoom:67%;" /></center>
