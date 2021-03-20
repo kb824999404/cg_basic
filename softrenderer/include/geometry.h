@@ -6,6 +6,8 @@ namespace Geometry{
     void drawPixel(int x,int y,const TGAColor& color,TGAImage& image);
     void line(int x0,int y0,int x1,int y1,const TGAColor& color,TGAImage& image);
     void circle(int x0,int y0,int r,const TGAColor& color,TGAImage& image);
+    void drawPixel_symmetric(int x0,int y0,int x,int y,
+    const TGAColor& color,TGAImage& image);
 }
 
 #endif

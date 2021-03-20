@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sphere</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+  </style>
+  <script src="./include/three.js"></script>
+  <script src="./include/OrbitControls.js"></script>
+</head>
+
+<body>
+  <script>
+
+let container, controls;
+    let camera, scene, renderer;
+
+    init();
+    animate();
+
+
+    //初始化
+    function init(){
+        container = document.createElement( 'div' );
+				document.body.appendChild( container );
+
+        // 场景
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color( 0xf0f0f0 );
+
+        //摄像机
+        camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 10000 );
+        camera.position.set(50,50,50);
+        camera.lookAt( scene.position );
+
+        //设置光源
+        initLihght();
+
+        //地面
+        var geometry = new THREE.BoxGeometry( 100,1,100);
+        var material = new THREE.MeshPhongMaterial( { 
+                  color: 0xaaaaaa} );
+        var ground = new THREE.Mesh(geometry, material); 
+        ground.position.set(0,0,0);
+        scene.add(ground);
+
+        //生成球面
+        createSphere();
+
+        //渲染
+        renderer = new THREE.WebGLRenderer();
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				container.appendChild( renderer.domElement );
+
+        //事件
+        window.addEventListener( 'resize', onWindowResize );
+
+        var controls = new THREE.OrbitControls(camera,renderer.domElement);//创建控件对象
+    }
+
+    
+    function onWindowResize() {
+
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+
+      renderer.setSize( window.innerWidth, window.innerHeight );
+
+    }
+
+    function initLihght(){
+        //光源
+        const directlight = new THREE.DirectionalLight( 0xffffff, 0.5 );
+				directlight.position.set( 1, 1, 1 ).normalize();
+				scene.add( directlight );
+
+        //点光源
+        var pointlight = new THREE.PointLight(0xffffff);
+        pointlight.position.set(50, 50, 50); 
+        scene.add(pointlight); 
+
+    }
+
+    //生成球面
+    function createSphere(){
+      var x0=0,y0=0;
+      var r=20;  
+      var color=0x9999dd;
+      sphere_bresenham(0,r,0,r,color);
+    }
+
+    //绘制体素
+    function drawVoxel(x,y,z,color){
+      var size=1;
+      var geometry = new THREE.BoxGeometry( size,size,size);
+      var material = new THREE.MeshPhongMaterial( { 
+                color: color,
+                specular:0xaaaaaa,
+                // emissive:color*0.1,
+                shininess:1} );
+      var object = new THREE.Mesh(geometry, material); 
+      object.position.x=x;
+      object.position.y=y;
+      object.position.z=z;
+      scene.add(object);
+    }
+
+    //绘制八个对称体素
+    function drawVoxel_symmetric8(x0,y0,x,y,z,color){
+      drawVoxel(x0+x,y0+y,z,color);
+      drawVoxel(x0+y,y0+x,z,color);
+      drawVoxel(x0+x,y0-y,z,color);
+      drawVoxel(x0+y,y0-x,z,color);
+      drawVoxel(x0-x,y0+y,z,color);
+      drawVoxel(x0-y,y0+x,z,color);
+      drawVoxel(x0-x,y0-y,z,color);
+      drawVoxel(x0-y,y0-x,z,color);
+    }
+
+    //圆生成算法
+    function circle_bresenham(x0,y0,r,z,color){
+        var x=0,y=r;
+        var d=3-2*r;
+        while (x<=y)
+        {
+            // 八个对称点
+            drawVoxel_symmetric8(x0,y0,x,y,z,color)
+            if(d<0){
+                d+=4*x+7;
+            }
+            else{
+                d+=4*(x-y)+11;
+                y--;
+            }
+            x++;
+        }
+    }
+
+    //球面生成算法
+    function sphere_bresenham(x0,y0,z0,r,color){
+        var c=0; //截面半径
+        var z=r; //z坐标
+        var d=3-2*r;
+        while(c<=z)
+        {
+            var v=c/r;
+            circle_bresenham(x0,y0,c,z,color);
+            circle_bresenham(x0,y0,z,c,color);
+            circle_bresenham(x0,y0,c,-z,color);
+            circle_bresenham(x0,y0,z,-c,color);
+            circle_bresenham(x0,y0,-c,z,color);
+            circle_bresenham(x0,y0,-z,c,color);
+            circle_bresenham(x0,y0,-c,-z,color);
+            circle_bresenham(x0,y0,-z,-c,color);
+            if(d<0)
+            {
+                d+=4*c+7;
+            }
+            else
+            {
+                d+=4*(c-z)+11;
+                z--;
+            }
+            c++;
+        }
+    }
+
+    function animate() {
+
+      requestAnimationFrame( animate );
+      render();
+
+    }
+
+    function render() {
+        renderer.render( scene, camera );
+    }
+
+  </script>
+</body>
+</html>

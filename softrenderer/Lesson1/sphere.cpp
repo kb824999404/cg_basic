@@ -24,27 +24,8 @@ void drawPixel_symmetric(int x0,int y0,int x,int y,const TGAColor& color,TGAImag
     drawPixel(x0-x,y0-y,color,image);
 }
 
-void circle_middle(int x0,int y0,int r,const TGAColor& color,TGAImage& image){
-    int x=0,y=r;
-    int d=1.25-r;
-    while (x<=y)
-    {   
-        // 八个对称点
-        drawPixel_symmetric(x0,y0,x,y,color,image);
-        if(d<0){
-            d+= 2*x+3;
-            x++;
-        }
-        else{
-            d+= 2*(x-y)+5;
-            x++;
-            y--;
-        }
-    }
-    
-}
 
-void circle_bresenham(int x0,int y0,int r,const TGAColor& color,TGAImage& image){
+void circle_bresenham(int x0,int y0,int r,const TGAColor& color,TGAImage& image,int z){
     int x=0,y=r;
     int d=3-2*r;
     while (x<=y)
@@ -63,33 +44,39 @@ void circle_bresenham(int x0,int y0,int r,const TGAColor& color,TGAImage& image)
     
 }
 
-void circle_positive_negative(int x0,int y0,int r,const TGAColor& color,TGAImage& image){
-    int x=0,y=r;
-    int f=0;
-    while (x<=y)
+void sphere_bresenham(int x0,int y0,int z0,int r,const TGAColor& color,TGAImage& image){
+    int c=0; //截面半径
+    int z=r; //z坐标
+    int d=3-2*r;
+    while(c<=z)
     {
-        // 八个对称点
-        drawPixel_symmetric(x0,y0,x,y,color,image);
-        if(f<0){
-            f+=2*x+1;
-            x++;
+        float v=float(c)/r;
+        circle_bresenham(x0,y0,c,color*v,image,z);
+        circle_bresenham(x0,y0,z,color*v,image,c);
+        circle_bresenham(x0,y0,c,color*v,image,-z);
+        circle_bresenham(x0,y0,z,color*v,image,-c);
+        circle_bresenham(x0,y0,-c,color*v,image,z);
+        circle_bresenham(x0,y0,-z,color*v,image,c);
+        circle_bresenham(x0,y0,-c,color*v,image,-z);
+        circle_bresenham(x0,y0,-z,color*v,image,-c);
+        if(d<0)
+        {
+            d+=4*c+7;
         }
-        else{
-            f+=1-2*y;
-            y--;
+        else
+        {
+            d+=4*(c-z)+11;
+            z--;
         }
+        c++;
     }
-    
 }
-
 
 int main(int argc,char ** argv){
     TGAImage image(800,800,TGAImage::RGB);
-    circle_middle(400,400,100,red,image);
-    circle_bresenham(400,400,200,green,image);
-    circle_positive_negative(400,400,300,blue,image);
+    sphere_bresenham(400,400,0,200,green,image);
     image.flip_vertically();
-    image.write_tga_file("circle.tga");
+    image.write_tga_file("sphere.tga");
 
     return 0;
 }
